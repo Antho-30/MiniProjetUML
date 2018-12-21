@@ -1,4 +1,4 @@
-﻿package metier;
+package metier;
 
 import static org.junit.Assert.*;
 

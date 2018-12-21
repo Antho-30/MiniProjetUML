@@ -1,5 +1,7 @@
 package metier;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,76 +13,74 @@ public class Catalogue implements I_Catalogue{
 	
 	private static ArrayList<I_Produit> tabProduits;
 		
-	
-	public static ArrayList<I_Produit> getTabProduits() {
-		return tabProduits;
-	}
-
-
-	public static void setTabProduits(ArrayList<I_Produit> tabProduits) {
-		Catalogue.tabProduits = tabProduits;
-	}
-
 
 	public Catalogue(){
 		tabProduits = new ArrayList<I_Produit>();
-		tabProduits.add(new Produit("Mars" , 50, 60));
-		tabProduits.add(new Produit("Raider" , 50, 60));
-		tabProduits.add(new Produit("Twix" , 50, 60));
-		tabProduits.add(new Produit("Bounty" , 50, 60));
 	}
 	
 
 	@Override
 	public boolean addProduit(I_Produit produit) {
-		for(I_Produit actuelProduit : tabProduits) {
-			if(actuelProduit.getNom() == produit.getNom()) {
+		try{
+			if(verificationNomPasPresent(produit) || !verificationPrixDifferentZeroEtPositif(produit) || !verificationStockSuperieurOuEgaleAZero(produit)) {
 				return false;
 			}
+		}catch(NullPointerException e){
+			System.out.println("Impossible de passer null en param�tre : Objet de type I_Produit attendu " + e);
+			return false;
 		}
 		tabProduits.add(produit);
 		return true;
 	}
 
+
 	@Override
 	public boolean addProduit(String nom, double prix, int qte) {
-		for(I_Produit produit : tabProduits) {
-			if(produit.getNom() == nom) {
+		I_Produit nvxProduit = new Produit(nom.trim(), prix, qte);
+		try {
+			if(!verificationNomPasPresent(nvxProduit) || !verificationPrixDifferentZeroEtPositif(nvxProduit) || !verificationStockSuperieurOuEgaleAZero(nvxProduit)) {
 				return false;
 			}
+		}catch(NullPointerException e){
+			System.out.println("Impossible de passer null en param�tre : String attendu " + e);
+			return false;
 		}
-		Produit nvxProduit = new Produit(nom, prix, qte);
 		tabProduits.add(nvxProduit);
-		return true;
-		
+		return true;	
 	}
 
 	@Override
-	public int addProduits(List<I_Produit> l) {
+	public int addProduits(List<I_Produit> listProduits) {
+		List<I_Produit> produitVerifie = new ArrayList();
 		try{
-			for(I_Produit newProduit : l) {
-				for(I_Produit actuelProduit : tabProduits) {
-					if(newProduit.getNom() == actuelProduit.getNom()) {
-						l.remove(newProduit);
-					}
+			for(I_Produit newProduit : listProduits) 
+			{
+				if(verificationPrixDifferentZeroEtPositif(newProduit) && verificationStockSuperieurOuEgaleAZero(newProduit) && verificationNomPasPresent(newProduit)) 
+				{
+					produitVerifie.add(newProduit);
 				}
+				
 			}
-		}catch(ConcurrentModificationException e){
-			System.out.println("Un probléme est survenu : "+ e);
+		}catch(NullPointerException e){
+			System.out.println("Impossible de passer null en param�tre : String attendu " + e);
+			return 0;
 		}
-		
-		tabProduits.addAll(l);
-		return l.size();
+		tabProduits.addAll(produitVerifie);
+		return produitVerifie.size();
 	}
 
 	@Override
 	public boolean removeProduit(String nom) {
-		for (Iterator<I_Produit> produit = tabProduits.iterator(); produit.hasNext();){
-			I_Produit p = produit.next();
-			if(p.getNom() == nom){
-				produit.remove();
-				return cat.addProduit("Nuts"true;
+		try {
+			for (I_Produit newProduit : tabProduits) {
+				if (verificationNomPasPresent(nom)) {
+					tabProduits.remove(newProduit);
+					return true;
+				}
 			}
+		} catch (NullPointerException e) {
+			System.out.println("Impossible de passer null en param�tre : String attendu " + e);
+			return false;
 		}
 		return false;
 	}
@@ -88,7 +88,7 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean acheterStock(String nomProduit, int qteAchetee) {
 		for(I_Produit produit : tabProduits) {
-			if(produit.getNom() == nomProduit) {
+			if(!verificationNomPasPresent(nomProduit) && qteAchetee > 0) {
 				produit.ajouter(qteAchetee);
 				return true;
 			}
@@ -99,14 +99,9 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean vendreStock(String nomProduit, int qteVendue) {
 		for(I_Produit produit : tabProduits) {
-			if(produit.getNom() == nomProduit) {
-				if(produit.getQuantite() > 0) {
-					produit.enlever(qteVendue);
-					return true;
-				}
-				else {
-					return false;
-				}
+			System.out.println(produit.getNom());
+			if(produit.getNom().equals(nomProduit) && produit.getQuantite() >= qteVendue) {
+				return produit.enlever(qteVendue);
 			}
 		}
 		return false;
@@ -125,22 +120,22 @@ public class Catalogue implements I_Catalogue{
 
 	@Override
 	public double getMontantTotalTTC() {
-		double montantTotalTTC = 0;
-		DecimalFormat f = new DecimalFormat("#.00");
-		f.setMaximumFractionDigits(2);
+		double montantTotal = 0; 
 		for(I_Produit produit : tabProduits) {
-			montantTotalTTC += produit.getPrixUnitaireTTC();
+			montantTotal += produit.getPrixStockTTC();
 		}
-		montantTotalTTC = Double.parseDouble(f.format(montantTotalTTC));
-		System.out.println(montantTotalTTC);
-		
-		return montantTotalTTC;
+		return montantTotal;
 	}
 
 
 	@Override
 	public String toString() {
-		return null;
+		String listeP = "";
+		for(I_Produit produit : tabProduits) {
+			listeP += produit.toString() + "\n";
+		}
+		listeP += "\nMontant total TTC du stock : "+ getMontantTotalTTC() +" �";
+		return listeP;
 	}
 	
 	@Override
@@ -149,6 +144,38 @@ public class Catalogue implements I_Catalogue{
 		
 	}
 	
+	private boolean verificationPrixDifferentZeroEtPositif(I_Produit produit) {
+		if(produit.getPrixUnitaireHT() > 0) {
+			return true;
+		}
+		return false;
+	}
 	
-
+	private boolean verificationStockSuperieurOuEgaleAZero(I_Produit produit) {
+		if (produit.getQuantite() >= 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean verificationNomPasPresent(String nom) {
+		String nomNouveauProduit = nom.trim();
+		for(I_Produit actuelProduit : tabProduits) {
+			if(nomNouveauProduit.equals(actuelProduit.getNom())) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean verificationNomPasPresent(I_Produit produit) {
+		String nomNouveauProduit = produit.getNom().trim();
+		for(I_Produit actuelProduit : tabProduits) {
+			if(nomNouveauProduit.equals(actuelProduit.getNom())) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 }
