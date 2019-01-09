@@ -1,5 +1,11 @@
 package metier;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class Produit implements I_Produit{
 	
 	private int quantiteStock;
@@ -42,21 +48,21 @@ public class Produit implements I_Produit{
 
 	@Override
 	public double getPrixUnitaireHT() {
-		return prixUnitaire;
+        return prixUnitaire;
 	}
 
 	@Override
 	public double getPrixUnitaireTTC() {
-		return prixUnitaire * (1 + tauxTVA); 
+        return prixUnitaire * (1 + tauxTVA);
 	}
 
 	@Override
 	public double getPrixStockTTC() {
-		return quantiteStock * getPrixUnitaireTTC();
+        return quantiteStock * getPrixUnitaireTTC();
 	}
 
 	@Override
 	public String toString() {
-		return this.nom + " - prix HT : "+this.prixUnitaire+" € - prix TTC : "+ this.getPrixUnitaireTTC() +" € - quantité en stock : " + this.quantiteStock;
+		return this.nom + " - prix HT : "+ this.getPrixUnitaireHT() +" € - prix TTC : "+ this.getPrixUnitaireTTC() +" € - quantité en stock : " + this.quantiteStock;
 	}
 }
