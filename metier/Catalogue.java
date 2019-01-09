@@ -3,11 +3,14 @@ package metier;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class Catalogue implements I_Catalogue{
 	
@@ -22,11 +25,11 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean addProduit(I_Produit produit) {
 		try{
-			if(verificationNomPasPresent(produit) || !verificationPrixDifferentZeroEtPositif(produit) || !verificationStockSuperieurOuEgaleAZero(produit)) {
+			if(!verificationNomPasPresent(produit) || !verificationPrixDifferentZeroEtPositif(produit) || !verificationStockSuperieurOuEgaleAZero(produit)) {
 				return false;
 			}
 		}catch(NullPointerException e){
-			System.out.println("Impossible de passer null en paramï¿½tre : Objet de type I_Produit attendu " + e);
+			System.out.println("Impossible de passer null en paramétre : Objet de type I_Produit attendu " + e);
 			return false;
 		}
 		tabProduits.add(produit);
@@ -37,12 +40,13 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean addProduit(String nom, double prix, int qte) {
 		I_Produit nvxProduit = new Produit(nom.trim(), prix, qte);
+		System.out.println(nvxProduit.getNom());
 		try {
 			if(!verificationNomPasPresent(nvxProduit) || !verificationPrixDifferentZeroEtPositif(nvxProduit) || !verificationStockSuperieurOuEgaleAZero(nvxProduit)) {
 				return false;
 			}
 		}catch(NullPointerException e){
-			System.out.println("Impossible de passer null en paramï¿½tre : String attendu " + e);
+			System.out.println("Impossible de passer null en paramétre : String attendu " + e);
 			return false;
 		}
 		tabProduits.add(nvxProduit);
@@ -62,7 +66,7 @@ public class Catalogue implements I_Catalogue{
 				
 			}
 		}catch(NullPointerException e){
-			System.out.println("Impossible de passer null en paramï¿½tre : String attendu " + e);
+			System.out.println("Impossible de passer null en paramétre : String attendu " + e);
 			return 0;
 		}
 		tabProduits.addAll(produitVerifie);
@@ -72,14 +76,13 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean removeProduit(String nom) {
 		try {
-			for (I_Produit newProduit : tabProduits) {
-				if (verificationNomPasPresent(nom)) {
-					tabProduits.remove(newProduit);
+			for(I_Produit actuelProduit : tabProduits) {
+				if(nom.equals(actuelProduit.getNom())) {
 					return true;
 				}
 			}
 		} catch (NullPointerException e) {
-			System.out.println("Impossible de passer null en paramï¿½tre : String attendu " + e);
+			System.out.println("Impossible de passer null en paramétre : String attendu " + e);
 			return false;
 		}
 		return false;
@@ -99,9 +102,10 @@ public class Catalogue implements I_Catalogue{
 	@Override
 	public boolean vendreStock(String nomProduit, int qteVendue) {
 		for(I_Produit produit : tabProduits) {
-			System.out.println(produit.getNom());
-			if(produit.getNom().equals(nomProduit) && produit.getQuantite() >= qteVendue) {
-				return produit.enlever(qteVendue);
+			if(produit.getNom().equals(nomProduit) && produit.getQuantite() > 0 && produit.getQuantite() >= qteVendue ) {
+				System.out.println(produit.getQuantite());
+				produit.enlever(qteVendue);
+				return true;
 			}
 		}
 		return false;
@@ -120,11 +124,15 @@ public class Catalogue implements I_Catalogue{
 
 	@Override
 	public double getMontantTotalTTC() {
-		double montantTotal = 0; 
+		float montantTotal = 0; 
 		for(I_Produit produit : tabProduits) {
 			montantTotal += produit.getPrixStockTTC();
 		}
-		return montantTotal;
+
+		DecimalFormat decimalFormat = new DecimalFormat("#.00", new DecimalFormatSymbols(Locale.US));
+        decimalFormat.setRoundingMode(RoundingMode.UP);
+        decimalFormat.setMinimumIntegerDigits(2);
+        return Double.parseDouble(decimalFormat.format(montantTotal));
 	}
 
 
@@ -134,7 +142,7 @@ public class Catalogue implements I_Catalogue{
 		for(I_Produit produit : tabProduits) {
 			listeP += produit.toString() + "\n";
 		}
-		listeP += "\nMontant total TTC du stock : "+ getMontantTotalTTC() +" ï¿½";
+		listeP += "\nMontant total TTC du stock : "+ getMontantTotalTTC() +" €";
 		return listeP;
 	}
 	
