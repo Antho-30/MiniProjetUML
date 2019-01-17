@@ -1,5 +1,11 @@
 package metier;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class Produit implements I_Produit{
 	
 	private int quantiteStock;
@@ -32,7 +38,7 @@ public class Produit implements I_Produit{
 
 	@Override
 	public String getNom() {
-		return nom;
+		return this.nom.replaceAll("	", " ");
 	}
 
 	@Override
@@ -42,25 +48,26 @@ public class Produit implements I_Produit{
 
 	@Override
 	public double getPrixUnitaireHT() {
-		return prixUnitaire;
+        return prixUnitaire;
 	}
 
 	@Override
 	public double getPrixUnitaireTTC() {
-		return prixUnitaire * (1 + tauxTVA); 
+        return prixUnitaire * (1 + tauxTVA);
 	}
 
 	@Override
 	public double getPrixStockTTC() {
-		return quantiteStock * getPrixUnitaireTTC();
+        return quantiteStock * getPrixUnitaireTTC();
 	}
 
-	@Override
 	public String toString() {
-		return "Nom = "+this.nom+", prix unitaire = "+this.prixUnitaire+", quantite en stock = "+ this.quantiteStock
-				+", taux de TVA appliquÃ© = "+this.tauxTVA;
+		final NumberFormat instance = NumberFormat.getNumberInstance();
+		instance.setMinimumFractionDigits(2);
+		instance.setMaximumFractionDigits(2);
+		instance.setGroupingUsed(false);
+		String Produit = null;
+			Produit = this.getNom() + " - prix HT : " + instance.format(this.getPrixUnitaireHT())+ " € - prix TTC : " + instance.format(this.getPrixUnitaireTTC()) + " € - quantité en stock : " + this.getQuantite() + "\n";
+		return Produit;
 	}
-	
-	
-
 }

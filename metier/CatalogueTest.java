@@ -1,4 +1,4 @@
-﻿package metier;
+package metier;
 
 import static org.junit.Assert.*;
 
@@ -797,7 +797,11 @@ public class CatalogueTest {
 	
 	@Test
 	public void testClear() {
-		fail("A vous d'�crire le code de ce test");
+		List<I_Produit> liste = new ArrayList<I_Produit>();
+		I_Produit p1 = createProduit("Mars", 15, 2);
+		liste.add(p1);
+		liste.clear();
+		assertTrue("le catalogue doit être vidé", liste.isEmpty());
 	}
 
 	private I_Produit createProduit(String nom, double prixHT, int quantite) {
